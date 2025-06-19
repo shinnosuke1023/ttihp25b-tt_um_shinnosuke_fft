@@ -33,10 +33,16 @@ module tt_um_shinnosuke_fft (
   // FFTデータ保存用のメモリ (64点 x 複素数(実部・虚部))
   reg signed [7:0] data_real [0:63];
   reg signed [7:0] data_imag [0:63];
-    // FFT計算用の変数
+  
+  // FFT計算用の変数
   reg [5:0] fft_stage;       // FFT計算ステージ (0-5: log2(64)=6ステージ)
   reg [5:0] fft_index;       // FFT計算のインデックス
   reg [5:0] butterfly_idx;   // バタフライ演算のインデックス
+  
+  // 計算用の一時変数
+  reg signed [15:0] temp_real, temp_imag; // 計算用の一時変数
+  reg signed [7:0] twiddle_real, twiddle_imag; // 回転因子
+  reg signed [15:0] product1_real, product1_imag, product2_real, product2_imag; // 複素乗算の中間結果
   
   // 出力変数
   reg [7:0] output_data;
@@ -115,44 +121,88 @@ module tt_um_shinnosuke_fft (
       default: next_state = IDLE;
     endcase
   end
-    // データアクセスのための状態フラグ
-  reg data_access_state;    // 0: データ入力モード, 1: FFT計算モード
-  
-  // データアクセス状態管理
+
+  // データ入力・メモリアクセスロジック（データ入力と演算結果の格納を統合）
   always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-      data_access_state <= 0;
-    end else if (state == DATA_INPUT) begin
-      data_access_state <= 0;
-    end else if (state == FFT_EXEC) begin
-      data_access_state <= 1;
+      // リセット時は何もしない（initialブロックで初期化済み）
+    end else begin
+      case (state)
+        // データ入力モード
+        DATA_INPUT: begin
+          if (ui_in[4] == 1'b0) begin
+            data_real[addr] <= data_in;
+          end else begin
+            data_imag[addr] <= data_in;
+          end
+        end
+        
+        // FFT計算モード - バタフライ演算の結果保存
+        FFT_EXEC: begin
+          if (fft_index != 0 && butterfly_idx < 32) begin
+            // 複素数加減算にビット幅の飽和処理を適用
+            // 加算側
+            if (temp_real > 127) begin
+              data_real[butterfly_idx] <= data_real[butterfly_idx] + 8'sd127;
+            end else if (temp_real < -128) begin
+              data_real[butterfly_idx] <= data_real[butterfly_idx] - 8'sd128;
+            end else begin
+              data_real[butterfly_idx] <= data_real[butterfly_idx] + temp_real[7:0];
+            end
+            
+            if (temp_imag > 127) begin
+              data_imag[butterfly_idx] <= data_imag[butterfly_idx] + 8'sd127;
+            end else if (temp_imag < -128) begin
+              data_imag[butterfly_idx] <= data_imag[butterfly_idx] - 8'sd128;
+            end else begin
+              data_imag[butterfly_idx] <= data_imag[butterfly_idx] + temp_imag[7:0];
+            end
+            
+            // 減算側
+            if (temp_real > 127) begin
+              data_real[butterfly_idx + 32] <= data_real[butterfly_idx] - 8'sd127;
+            end else if (temp_real < -128) begin
+              data_real[butterfly_idx + 32] <= data_real[butterfly_idx] + 8'sd128;
+            end else begin
+              data_real[butterfly_idx + 32] <= data_real[butterfly_idx] - temp_real[7:0];
+            end
+            
+            if (temp_imag > 127) begin
+              data_imag[butterfly_idx + 32] <= data_imag[butterfly_idx] - 8'sd127;
+            end else if (temp_imag < -128) begin
+              data_imag[butterfly_idx + 32] <= data_imag[butterfly_idx] + 8'sd128;
+            end else begin
+              data_imag[butterfly_idx + 32] <= data_imag[butterfly_idx] - temp_imag[7:0];
+            end
+          end
+        end
+        
+        default: begin
+          // 他の状態ではメモリアクセスなし
+        end
+      endcase
     end
   end
   
-  // データ入力ロジック
-  always @(posedge clk) begin
-    if (state == DATA_INPUT && data_access_state == 0) begin
-      if (ui_in[4] == 1'b0) begin
-        data_real[addr] <= data_in;
-      end else begin
-        data_imag[addr] <= data_in;
-      end
-    end
-  end
-    // FFT計算ロジック (バタフライ演算)
-  reg signed [15:0] temp_real, temp_imag; // 計算用の一時変数
-  reg signed [7:0] twiddle_real, twiddle_imag; // 回転因子
-  reg signed [15:0] product1_real, product1_imag, product2_real, product2_imag; // 複素乗算の中間結果
-  
+  // FFT計算制御と中間計算ロジック
   always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
       busy <= 1'b0;
       fft_stage <= 0;
       fft_index <= 0;
+      butterfly_idx <= 0;
+      twiddle_real <= 0;
+      twiddle_imag <= 0;
+      temp_real <= 0;
+      temp_imag <= 0;
+      product1_real <= 0;
+      product1_imag <= 0;
+      product2_real <= 0;
+      product2_imag <= 0;
     end else if (state == FFT_EXEC) begin
       busy <= 1'b1;
       
-      // FFTのバタフライ計算
+      // FFTのステージと計算制御
       if (fft_index == 0) begin
         // 新しいステージの開始
         butterfly_idx <= 0;
@@ -162,62 +212,42 @@ module tt_um_shinnosuke_fft (
         end
       end else if (butterfly_idx < 32) begin // 64/2 = 32バタフライ
         // 回転因子（Twiddle Factor）の計算
-        // k = butterfy_idxを使用して回転因子のインデックスを決定
-        // W_N^k = cos(2πk/N) - j*sin(2πk/N)
-        if (fft_stage == 1) begin
-          // ステージ1（N=2）の回転因子: k=0のみ
-          twiddle_real <= cos_table[0]; // cos(0) = 1
-          twiddle_imag <= sin_table[0]; // sin(0) = 0
-        end else if (fft_stage == 2) begin
-          // ステージ2（N=4）の回転因子: k=0,2
-          twiddle_real <= (butterfly_idx[0] == 0) ? cos_table[0] : cos_table[16]; // cos(0), cos(π/2)
-          twiddle_imag <= (butterfly_idx[0] == 0) ? sin_table[0] : sin_table[16]; // sin(0), sin(π/2)
-        end else if (fft_stage == 3) begin
-          // ステージ3（N=8）の回転因子: k=0,4,8,12
-          twiddle_real <= cos_table[{butterfly_idx[1:0], 3'b0}];
-          twiddle_imag <= sin_table[{butterfly_idx[1:0], 3'b0}];
-        end else if (fft_stage == 4) begin
-          // ステージ4（N=16）
-          twiddle_real <= cos_table[{butterfly_idx[2:0], 2'b0}];
-          twiddle_imag <= sin_table[{butterfly_idx[2:0], 2'b0}];
-        end else if (fft_stage == 5) begin
-          // ステージ5（N=32）
-          twiddle_real <= cos_table[{butterfly_idx[3:0], 1'b0}];
-          twiddle_imag <= sin_table[{butterfly_idx[3:0], 1'b0}];
-        end else begin
-          // ステージ6（N=64）
-          twiddle_real <= cos_table[butterfly_idx[4:0]];
-          twiddle_imag <= sin_table[butterfly_idx[4:0]];
-        end
+        case (fft_stage)
+          1: begin
+            twiddle_real <= cos_table[0]; // cos(0) = 1
+            twiddle_imag <= sin_table[0]; // sin(0) = 0
+          end
+          2: begin
+            twiddle_real <= (butterfly_idx[0] == 0) ? cos_table[0] : cos_table[16];
+            twiddle_imag <= (butterfly_idx[0] == 0) ? sin_table[0] : sin_table[16];
+          end
+          3: begin
+            twiddle_real <= cos_table[{butterfly_idx[1:0], 3'b0}];
+            twiddle_imag <= sin_table[{butterfly_idx[1:0], 3'b0}];
+          end
+          4: begin
+            twiddle_real <= cos_table[{butterfly_idx[2:0], 2'b0}];
+            twiddle_imag <= sin_table[{butterfly_idx[2:0], 2'b0}];
+          end
+          5: begin
+            twiddle_real <= cos_table[{butterfly_idx[3:0], 1'b0}];
+            twiddle_imag <= sin_table[{butterfly_idx[3:0], 1'b0}];
+          end
+          default: begin
+            twiddle_real <= cos_table[butterfly_idx[4:0]];
+            twiddle_imag <= sin_table[butterfly_idx[4:0]];
+          end
+        endcase
         
-        // バタフライ計算の実行
-        // バタフライ演算のインデックス計算
-        // a_idx = グループ番号 * グループサイズ * 2 + グループ内オフセット
-        // b_idx = a_idx + グループサイズ
-        // 各ステージでのグループのサイズは butterfly_size
-        
-        // バタフライ演算: (a, b) => (a+b*W, a-b*W)
-        // 複素数乗算: (ar+j*ai)*(br+j*bi) = (ar*br-ai*bi) + j*(ar*bi+ai*br)
-        
-        // ここでバタフライ計算を実行
-        // 簡易的な実装として、各クロックサイクルで1つのバタフライを計算
-        
-        // 複素数乗算: (data_real[b_idx] + j*data_imag[b_idx]) * (twiddle_real - j*twiddle_imag)
+        // 複素数乗算の計算
         product1_real <= (data_real[butterfly_idx + 32] * twiddle_real) >>> 7;
         product1_imag <= (data_real[butterfly_idx + 32] * twiddle_imag) >>> 7;
         product2_real <= (data_imag[butterfly_idx + 32] * twiddle_imag) >>> 7;
         product2_imag <= (data_imag[butterfly_idx + 32] * twiddle_real) >>> 7;
-          // 複素数加減算
+        
+        // 複素数加減算の中間結果
         temp_real <= product1_real - product2_real;
         temp_imag <= product1_imag + product2_imag;
-        
-        // バタフライの最終結果を格納 (ビット幅を調整して8ビットにキャスト)
-        if (data_access_state == 1) begin
-          data_real[butterfly_idx] <= data_real[butterfly_idx] + (temp_real[15:8] == 0 ? temp_real[7:0] : {temp_real[15], {7{1'b1}}});
-          data_imag[butterfly_idx] <= data_imag[butterfly_idx] + (temp_imag[15:8] == 0 ? temp_imag[7:0] : {temp_imag[15], {7{1'b1}}});
-          data_real[butterfly_idx + 32] <= data_real[butterfly_idx] - (temp_real[15:8] == 0 ? temp_real[7:0] : {temp_real[15], {7{1'b1}}});
-          data_imag[butterfly_idx + 32] <= data_imag[butterfly_idx] - (temp_imag[15:8] == 0 ? temp_imag[7:0] : {temp_imag[15], {7{1'b1}}});
-        end
         
         // 次のバタフライへ
         butterfly_idx <= butterfly_idx + 1;
