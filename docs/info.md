@@ -1,20 +1,56 @@
 <!---
 
-This file is used to generate your project datasheet. Please fill in the information below and delete any unused
-sections.
-
-You can also include images in this folder and reference them in the markdown. Each image must be less than
-512 kb in size, and the combined size of all images must be less than 1 MB.
+This file is used to generate your project datasheet.
 -->
 
-## How it works
+## 64点FFT計算器
 
-Explain how your project works
+このプロジェクトはTiny Tapeout向けの64点FFT（高速フーリエ変換）演算回路です。8ビット入出力インターフェースを使用して、シリアルに64点の時系列データを入力し、周波数領域のデータを出力します。
 
-## How to test
+## 動作原理
 
-Explain how to use your project
+このFFT計算器は以下の特徴を持っています：
+- 64点のFFT計算が可能
+- Radix-2 バタフライアルゴリズムを使用
+- 8ビット固定小数点演算
+- シーケンシャル処理による省リソース実装
 
-## External hardware
+動作は以下の3つのフェーズで構成されています：
 
-List external hardware used in your project (e.g. PMOD, LED display, etc), if any
+1. データ入力フェーズ：時系列データ（実部と虚部）をメモリに格納
+2. FFT実行フェーズ：6ステージのバタフライ計算を実行
+3. データ出力フェーズ：計算結果（周波数領域データ）を出力
+
+## 使用方法
+
+このモジュールは3つのコマンドモードで動作します：
+
+### データ入力モード (001)
+- ui_in[7:5] = 001（データ入力コマンド）
+- ui_in[4] = 0/1（0=実部、1=虚部）
+- ui_in[3:0] = アドレス下位4ビット
+- uio_in[7:0] = 入力データ値（8ビット符号付き）
+
+### FFT実行モード (010)
+- ui_in[7:5] = 010（FFT実行コマンド）
+- 計算中はuio_out[7]（busy信号）が1になります
+
+### データ出力モード (011)
+- ui_in[7:5] = 011（データ出力コマンド）
+- ui_in[4] = 0/1（0=実部、1=虚部）
+- ui_in[3:0] = アドレス下位4ビット
+- uo_out[7:0] = 出力データ値（8ビット符号付き）
+
+## テスト方法
+
+付属のテストベンチは単一周波数の正弦波を入力し、FFT計算後の周波数スペクトルを確認します。テストは以下のステップで行われます：
+
+1. 正弦波データの生成と入力
+2. FFTの実行
+3. 結果の取得と正しいスペクトルピークの確認
+
+```
+make test
+```
+
+コマンドでテストを実行できます。結果は`tb.vcd`ファイルで確認可能です。

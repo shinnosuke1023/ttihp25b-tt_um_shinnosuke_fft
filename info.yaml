@@ -23,34 +23,33 @@ project:
 # This section is for the datasheet/website. Use descriptive names (e.g., RX, TX, MOSI, SCL, SEG_A, etc.).
 pinout:
   # Inputs
-  ui[0]: ""
-  ui[1]: ""
-  ui[2]: ""
-  ui[3]: ""
-  ui[4]: ""
-  ui[5]: ""
-  ui[6]: ""
-  ui[7]: ""
+  ui[0]: "アドレス0"
+  ui[1]: "アドレス1"
+  ui[2]: "アドレス2"
+  ui[3]: "アドレス3"
+  ui[4]: "実部/虚部選択"
+  ui[5]: "コマンド0"
+  ui[6]: "コマンド1"
+  ui[7]: "コマンド2"
 
   # Outputs
-  uo[0]: ""
-  uo[1]: ""
-  uo[2]: ""
-  uo[3]: ""
-  uo[4]: ""
-  uo[5]: ""
-  uo[6]: ""
-  uo[7]: ""
+  uo[0]: "データ出力0"
+  uo[1]: "データ出力1"
+  uo[2]: "データ出力2"
+  uo[3]: "データ出力3"
+  uo[4]: "データ出力4"
+  uo[5]: "データ出力5"
+  uo[6]: "データ出力6"
+  uo[7]: "データ出力7"
 
   # Bidirectional pins
-  uio[0]: ""
-  uio[1]: ""
-  uio[2]: ""
-  uio[3]: ""
-  uio[4]: ""
-  uio[5]: ""
-  uio[6]: ""
-  uio[7]: ""
+  uio[0]: "データ入力0"
+  uio[1]: "データ入力1"
+  uio[2]: "データ入力2"
+  uio[3]: "データ入力3"
+  uio[4]: "データ入力4"  uio[5]: "データ入力5"
+  uio[6]: "データ入力6"
+  uio[7]: "ビジーフラグ"
 
 # Do not change!
 yaml_version: 6
