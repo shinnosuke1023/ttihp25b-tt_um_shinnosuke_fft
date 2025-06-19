@@ -33,12 +33,10 @@ module tt_um_shinnosuke_fft (
   // FFTデータ保存用のメモリ (64点 x 複素数(実部・虚部))
   reg signed [7:0] data_real [0:63];
   reg signed [7:0] data_imag [0:63];
-  
-  // FFT計算用の変数
+    // FFT計算用の変数
   reg [5:0] fft_stage;       // FFT計算ステージ (0-5: log2(64)=6ステージ)
   reg [5:0] fft_index;       // FFT計算のインデックス
   reg [5:0] butterfly_idx;   // バタフライ演算のインデックス
-  reg [5:0] butterfly_size;  // 現在のステージのバタフライサイズ
   
   // 出力変数
   reg [7:0] output_data;
@@ -117,10 +115,23 @@ module tt_um_shinnosuke_fft (
       default: next_state = IDLE;
     endcase
   end
+    // データアクセスのための状態フラグ
+  reg data_access_state;    // 0: データ入力モード, 1: FFT計算モード
+  
+  // データアクセス状態管理
+  always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      data_access_state <= 0;
+    end else if (state == DATA_INPUT) begin
+      data_access_state <= 0;
+    end else if (state == FFT_EXEC) begin
+      data_access_state <= 1;
+    end
+  end
   
   // データ入力ロジック
   always @(posedge clk) begin
-    if (state == DATA_INPUT) begin
+    if (state == DATA_INPUT && data_access_state == 0) begin
       if (ui_in[4] == 1'b0) begin
         data_real[addr] <= data_in;
       end else begin
@@ -128,8 +139,7 @@ module tt_um_shinnosuke_fft (
       end
     end
   end
-  
-  // FFT計算ロジック (バタフライ演算)
+    // FFT計算ロジック (バタフライ演算)
   reg signed [15:0] temp_real, temp_imag; // 計算用の一時変数
   reg signed [7:0] twiddle_real, twiddle_imag; // 回転因子
   reg signed [15:0] product1_real, product1_imag, product2_real, product2_imag; // 複素乗算の中間結果
@@ -139,7 +149,6 @@ module tt_um_shinnosuke_fft (
       busy <= 1'b0;
       fft_stage <= 0;
       fft_index <= 0;
-      butterfly_size <= 1;
     end else if (state == FFT_EXEC) begin
       busy <= 1'b1;
       
@@ -150,9 +159,6 @@ module tt_um_shinnosuke_fft (
         if (fft_stage == 0) begin
           // 初期化（ビットリバース順に並べ替え）
           fft_index <= fft_index + 1;
-        end else begin
-          // バタフライ計算の準備
-          butterfly_size <= (1 << fft_stage);
         end
       end else if (butterfly_idx < 32) begin // 64/2 = 32バタフライ
         // 回転因子（Twiddle Factor）の計算
@@ -201,16 +207,17 @@ module tt_um_shinnosuke_fft (
         product1_imag <= (data_real[butterfly_idx + 32] * twiddle_imag) >>> 7;
         product2_real <= (data_imag[butterfly_idx + 32] * twiddle_imag) >>> 7;
         product2_imag <= (data_imag[butterfly_idx + 32] * twiddle_real) >>> 7;
-        
-        // 複素数加減算
+          // 複素数加減算
         temp_real <= product1_real - product2_real;
         temp_imag <= product1_imag + product2_imag;
         
-        // バタフライの最終結果を格納
-        data_real[butterfly_idx] <= data_real[butterfly_idx] + temp_real;
-        data_imag[butterfly_idx] <= data_imag[butterfly_idx] + temp_imag;
-        data_real[butterfly_idx + 32] <= data_real[butterfly_idx] - temp_real;
-        data_imag[butterfly_idx + 32] <= data_imag[butterfly_idx] - temp_imag;
+        // バタフライの最終結果を格納 (ビット幅を調整して8ビットにキャスト)
+        if (data_access_state == 1) begin
+          data_real[butterfly_idx] <= data_real[butterfly_idx] + (temp_real[15:8] == 0 ? temp_real[7:0] : {temp_real[15], {7{1'b1}}});
+          data_imag[butterfly_idx] <= data_imag[butterfly_idx] + (temp_imag[15:8] == 0 ? temp_imag[7:0] : {temp_imag[15], {7{1'b1}}});
+          data_real[butterfly_idx + 32] <= data_real[butterfly_idx] - (temp_real[15:8] == 0 ? temp_real[7:0] : {temp_real[15], {7{1'b1}}});
+          data_imag[butterfly_idx + 32] <= data_imag[butterfly_idx] - (temp_imag[15:8] == 0 ? temp_imag[7:0] : {temp_imag[15], {7{1'b1}}});
+        end
         
         // 次のバタフライへ
         butterfly_idx <= butterfly_idx + 1;
