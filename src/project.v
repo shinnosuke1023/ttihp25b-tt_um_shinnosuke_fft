@@ -21,13 +21,18 @@ module tt_um_shinnosuke_fft (
   
   parameter WIDTH = 10000;
 
-  reg [WIDTH-1:0] shift_reg;
+  reg [WIDTH-1:0] shift_reg0;
+  reg [WIDTH-1:0] shift_reg1;
+  reg [WIDTH-1:0] shift_reg2;
 
   always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-      shift_reg <= {{WIDTH{1'b0}}}; // Reset the shift register to all zeros
+      shift_reg0 <= {{WIDTH{1'b0}}}; // Reset shift register to 0
+      shift_reg1 <= {{WIDTH{1'b0}}};
     end else if (ena) begin
-      shift_reg <= {shift_reg[WIDTH-2:0], ui_in}; // Shift in the ui_in value
+      shift_reg0 <= {shift_reg0[WIDTH-2:8], ui_in}; // Shift in ui_in
+      shift_reg1 <= {shift_reg1[WIDTH-2:8], uio_in}; // Shift in uio_in
+      shift_reg2 <= shift_reg0 * shift_reg1; // Example operation: sum of two shift registers
     end
   end
 
