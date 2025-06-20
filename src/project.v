@@ -62,11 +62,23 @@ module tt_um_shinnosuke_fft (
   assign uo_out = sum41;
 
 
+  parameter WIDTH = 10000;
+
+  reg [WIDTH-1:0] shift_reg;
+
+  always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      shift_reg <= {{WIDTH{1'b0}}}; // Reset the shift register to all zeros
+    end else if (ena) begin
+      shift_reg <= {shift_reg[WIDTH-2:0], ui_in}; // Shift in the ui_in value
+    end
+  end
+
 
   assign uio_out = 0;
   assign uio_oe  = 0;
 
   // List all unused inputs to prevent warnings
-  wire _unused = &{ena, clk, rst_n, 1'b0};
+  // wire _unused = &{ena, clk, rst_n, 1'b0};
 
 endmodule
