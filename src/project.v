@@ -19,11 +19,12 @@ module tt_um_shinnosuke_fft (
   // All output pins must be assigned. If not used, assign to 0.
   assign uo_out  = ui_in + uio_in;  // Example: ou_out is the sum of ui_in and uio_in
   
-  parameter WIDTH = 10000;
+  parameter WIDTH = 100000;
 
   reg [WIDTH-1:0] shift_reg0;
   reg [WIDTH-1:0] shift_reg1;
   reg [WIDTH-1:0] shift_reg2;
+  wire [2*WIDTH-1:0] deka_wire;
 
   always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
@@ -32,10 +33,11 @@ module tt_um_shinnosuke_fft (
     end else if (ena) begin
       shift_reg0 <= {shift_reg0[WIDTH-2:8], ui_in}; // Shift in ui_in
       shift_reg1 <= {shift_reg1[WIDTH-2:8], uio_in}; // Shift in uio_in
-      shift_reg2 <= shift_reg0 * shift_reg1; // Example operation: sum of two shift registers
+      // shift_reg2 <= shift_reg0 * shift_reg1; // Example operation: sum of two shift registers
     end
   end
 
+  assign deka_wire = shift_reg0 * shift_reg1; // Example operation: product of two shift registers
 
   assign uio_out = 0;
   assign uio_oe  = 0;
