@@ -24,7 +24,7 @@ module tb ();
   wire [7:0] uio_oe;
 
   // Replace tt_um_example with your module name:
-  tt_um_example user_project (
+  tt_um_shinnosuke_fft fft (
       .ui_in  (ui_in),    // Dedicated inputs
       .uo_out (uo_out),   // Dedicated outputs
       .uio_in (uio_in),   // IOs: Input path
@@ -34,5 +34,27 @@ module tb ();
       .clk    (clk),      // clock
       .rst_n  (rst_n)     // not reset
   );
+
+  // Example: Testing ou_out is the sum of ui_in and uio_in
+  initial begin
+    // Initialize inputs
+    clk = 0;
+    rst_n = 0;
+    ena = 1;
+    ui_in = 8'h00;
+    uio_in = 8'h00;
+
+    // Release reset
+    #10 rst_n = 1;
+
+    // Test case: Set inputs and check output
+    #10 ui_in = 8'h01; uio_in = 8'h02; // Expect uo_out to be 3
+    #10 if (uo_out !== (ui_in + uio_in)) $display("Test failed: %h + %h != %h", ui_in, uio_in, uo_out);
+
+    // More test cases can be added here
+
+    // Finish simulation
+    #100 $finish;
+  end
 
 endmodule
