@@ -17,7 +17,34 @@ module tt_um_shinnosuke_fft (
 );
 
   // All output pins must be assigned. If not used, assign to 0.
-  assign uo_out  = ui_in + uio_in;  // Example: ou_out is the sum of ui_in and uio_in
+  // assign uo_out  = ui_in + uio_in;  // Example: ou_out is the sum of ui_in and uio_in
+  wire [3:0] in1, in2;
+  assign in1 = ui_in[3:0];
+  assign in2 = ui_in[7:4];
+
+  wire [7:0] multiply1, multiply2, multiply3, multiply4, multiply5, multiply6, multiply7, multiply8;
+  assign multiply1 = in1 * in2;
+  assign multiply2 = in1 * in2;
+  assign multiply3 = in1 * in2;
+  assign multiply4 = in1 * in2;
+  assign multiply5 = in1 * in2;
+  assign multiply6 = in1 * in2;
+  assign multiply7 = in1 * in2;
+  assign multiply8 = in1 * in2;
+  wire [7:0] sum11, sum12, sum13, sum14;
+  assign sum11 = multiply1 + multiply2;
+  assign sum12 = multiply3 + multiply4;
+  assign sum13 = multiply5 + multiply6;
+  assign sum14 = multiply7 + multiply8;
+  wire [7:0] sum21, sum22;
+  assign sum21 = sum11 + sum12;
+  assign sum22 = sum13 + sum14;
+  wire [7:0] sum31;
+  assign sum31 = sum21 + sum22;
+  assign uo_out = sum31;
+
+
+
   assign uio_out = 0;
   assign uio_oe  = 0;
 

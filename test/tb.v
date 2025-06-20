@@ -35,4 +35,37 @@ module tb ();
       .rst_n  (rst_n)     // not reset
   );
 
+  initial begin
+    // Initialize inputs
+    clk = 0;
+    rst_n = 0;
+    ena = 0;
+    ui_in = 8'h00;
+    uio_in = 8'h00;
+
+    // Release reset
+    #10 rst_n = 1;
+
+    // Enable the design
+    #10 ena = 1;
+
+    // Apply some test inputs
+    #10 ui_in = 8'b01101100; // Example input
+
+    #10;
+    // Check outputs
+    $display("uo_out: %b, uio_out: %b, uio_oe: %b", uo_out, uio_out, uio_oe);
+
+    // Change inputs
+    #10 ui_in = 8'b11001100; // Another example input
+    #10;
+    // Check outputs again
+    $display("uo_out: %b, uio_out: %b, uio_oe: %b", uo_out, uio_out, uio_oe);
+
+    // Finish simulation
+    #100;
+    $finish;
+  end
+
+
 endmodule
