@@ -35,6 +35,8 @@ module tb ();
       .rst_n  (rst_n)     // not reset
   );
 
+  always #5 clk = ~clk; // Generate a clock with a period of 10 time units
+
   initial begin
     // Initialize inputs
     clk = 0;
@@ -50,21 +52,17 @@ module tb ();
     #10 ena = 1;
 
     // Apply some test inputs
-    #10 ui_in = 8'b01101100; // Example input
+    #10 ui_in = 8'h01; uio_in = 8'h02;
 
-    #10;
-    // Check outputs
-    $display("uo_out: %b, uio_out: %b, uio_oe: %b", uo_out, uio_out, uio_oe);
+    #10
+    
+    // output should be 3 (1 + 2)
+    if (uo_out !== 8'h03) begin
+      $display("Test failed: uo_out = %h, expected 03", uo_out);
+    end else begin
+      $display("Test passed: uo_out = %h", uo_out);
+    end
 
-    // Change inputs
-    #10 ui_in = 8'b11001100; // Another example input
-    #10;
-    // Check outputs again
-    $display("uo_out: %b, uio_out: %b, uio_oe: %b", uo_out, uio_out, uio_oe);
-
-    // Finish simulation
-    #100;
-    $finish;
   end
 
 
