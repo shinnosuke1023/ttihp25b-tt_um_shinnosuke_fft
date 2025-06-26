@@ -21,7 +21,7 @@ module tt_um_shinnosuke_fft (
   
   // Extreme parameters to push Tiny Tapeout to its limits
   parameter WIDTH = 8192;              // 8k bits (maximum without warnings, still massive)
-  parameter LUT_SIZE = 8192;           // Huge lookup table
+  parameter LUT_SIZE = 256;            // Lookup table size (8-bit addressable)
   parameter NUM_MEGA_REGS = 64;        // 64 massive shift registers (manageable for manual assignment)
   parameter NUM_PROC_REGS = 32;        // 32 processing registers 
   parameter NUM_ACCUM_REGS = 16;       // 16 accumulator registers
@@ -297,7 +297,7 @@ module tt_um_shinnosuke_fft (
       processing_state <= processing_state + 1;
       
       // Complex lookup table operations
-      mega_lut[state_counter[12:0]] <= mega_lut[state_counter[12:0]] ^ 
+      mega_lut[state_counter[7:0]] <= mega_lut[state_counter[7:0]] ^ 
                                        mega_result ^ 
                                        {cycle_counter, cycle_counter};
     end
