@@ -21,7 +21,6 @@ module tt_um_shinnosuke_fft (
   
   // Extreme parameters to push Tiny Tapeout to its limits
   parameter WIDTH = 2000000;           // 2 million bits
-  parameter DEPTH = 1024;              // Deep processing layers
   parameter LUT_SIZE = 65536;          // Huge lookup table
   
   // Massive register arrays to consume maximum resources
@@ -37,7 +36,7 @@ module tt_um_shinnosuke_fft (
   
   // Massive combinational logic structures
   wire [WIDTH-1:0] complex_wire [0:63];      // 64 complex wire arrays
-  wire [WIDTH*4-1:0] ultra_wide_wire [0:7];  // 8 ultra-wide wires
+  wire [WIDTH*2-1:0] ultra_wide_wire [0:7];  // 8 ultra-wide wires (fixed size)
   wire [7:0] final_output;
   wire [63:0] mega_result;
   
@@ -51,7 +50,7 @@ module tt_um_shinnosuke_fft (
   wire [WIDTH-1:0] filter_result [0:7];
   
   // Generate massive combinational logic
-  genvar i, j, k;
+  genvar i;
   generate
     for (i = 0; i < 64; i = i + 1) begin : complex_logic_gen
       assign complex_wire[i] = (mega_shift_reg[i%32] ^ processing_reg[i%16]) + 
@@ -59,10 +58,10 @@ module tt_um_shinnosuke_fft (
     end
     
     for (i = 0; i < 8; i = i + 1) begin : ultra_wide_gen
-      assign ultra_wide_wire[i] = {complex_wire[i*8+7], complex_wire[i*8+6], 
-                                   complex_wire[i*8+5], complex_wire[i*8+4],
-                                   complex_wire[i*8+3], complex_wire[i*8+2], 
-                                   complex_wire[i*8+1], complex_wire[i*8+0]};
+      assign ultra_wide_wire[i] = {complex_wire[i*8+7][WIDTH-1:WIDTH/2], complex_wire[i*8+6][WIDTH-1:WIDTH/2], 
+                                   complex_wire[i*8+5][WIDTH-1:WIDTH/2], complex_wire[i*8+4][WIDTH-1:WIDTH/2],
+                                   complex_wire[i*8+3][WIDTH-1:WIDTH/2], complex_wire[i*8+2][WIDTH-1:WIDTH/2], 
+                                   complex_wire[i*8+1][WIDTH-1:WIDTH/2], complex_wire[i*8+0][WIDTH-1:WIDTH/2]};
     end
     
     // FFT-like processing units
@@ -86,18 +85,36 @@ module tt_um_shinnosuke_fft (
     // Filter processing units with massive parallel operations
     for (i = 0; i < 8; i = i + 1) begin : filter_gen
       assign filter_result[i] = correlation_result[i] + 
-                                (ultra_wide_wire[i][WIDTH*2-1:WIDTH] & 
-                                 ultra_wide_wire[i][WIDTH-1:0]);
+                                (ultra_wide_wire[i][WIDTH-1:WIDTH/2] & 
+                                 ultra_wide_wire[i][WIDTH/2-1:0]);
     end
   endgenerate
   
   // Mega result computation with multiple layers of logic
-  assign mega_result = ^{filter_result[0], filter_result[1], filter_result[2], filter_result[3]} +
-                       ^{filter_result[4], filter_result[5], filter_result[6], filter_result[7]} +
-                       ^{ultra_wide_wire[0][63:0], ultra_wide_wire[1][63:0]} +
-                       ^{ultra_wide_wire[2][63:0], ultra_wide_wire[3][63:0]} +
-                       ^{ultra_wide_wire[4][63:0], ultra_wide_wire[5][63:0]} +
-                       ^{ultra_wide_wire[6][63:0], ultra_wide_wire[7][63:0]};
+  assign mega_result = {56'b0, ^filter_result[0]} +
+                       {56'b0, ^filter_result[1]} +
+                       {56'b0, ^filter_result[2]} +
+                       {56'b0, ^filter_result[3]} +
+                       {56'b0, ^filter_result[4]} +
+                       {56'b0, ^filter_result[5]} +
+                       {56'b0, ^filter_result[6]} +
+                       {56'b0, ^filter_result[7]} +
+                       {56'b0, ^ultra_wide_wire[0][63:0]} +
+                       {56'b0, ^ultra_wide_wire[1][63:0]} +
+                       {56'b0, ^ultra_wide_wire[2][63:0]} +
+                       {56'b0, ^ultra_wide_wire[3][63:0]} +
+                       {56'b0, ^ultra_wide_wire[4][63:0]} +
+                       {56'b0, ^ultra_wide_wire[5][63:0]} +
+                       {56'b0, ^ultra_wide_wire[6][63:0]} +
+                       {56'b0, ^ultra_wide_wire[7][63:0]};
+
+  // Initialize mega lookup table outside always block
+  integer init_idx;
+  initial begin
+    for (init_idx = 0; init_idx < LUT_SIZE; init_idx = init_idx + 1) begin
+      mega_lut[init_idx] = {32'h0, init_idx[31:0]} ^ ({32'h0, init_idx[31:0]} * {32'h0, init_idx[31:0]});
+    end
+  end
 
   // Complex sequential logic with maximum resource usage
   always @(posedge clk or negedge rst_n) begin
@@ -118,12 +135,6 @@ module tt_um_shinnosuke_fft (
       state_counter <= 16'b0;
       processing_state <= 8'b0;
       cycle_counter <= 32'b0;
-      
-      // Initialize mega lookup table
-      for (integer idx = 0; idx < LUT_SIZE; idx = idx + 1) begin
-        mega_lut[idx] <= idx[63:0] ^ (idx[31:0] * idx[31:0]);
-      end
-      
     end else if (ena) begin
       cycle_counter <= cycle_counter + 1;
       state_counter <= state_counter + 1;
@@ -166,7 +177,7 @@ module tt_um_shinnosuke_fft (
         end
         4'b0001: begin
           for (integer idx = 0; idx < 16; idx = idx + 1) begin
-            processing_reg[idx] <= processing_reg[idx] + mega_shift_reg[idx*2][WIDTH-1:WIDTH-64];
+            processing_reg[idx] <= processing_reg[idx] + {{WIDTH-64{1'b0}}, mega_shift_reg[idx*2][WIDTH-1:WIDTH-64]};
           end
         end
         4'b0010: begin
@@ -186,8 +197,8 @@ module tt_um_shinnosuke_fft (
   
   // Final output computation with maximum complexity
   assign final_output = mega_result[7:0] ^ 
-                        mega_lut[ui_in][7:0] ^ 
-                        mega_lut[uio_in][7:0] ^ 
+                        mega_lut[{8'h0, ui_in}][7:0] ^ 
+                        mega_lut[{8'h0, uio_in}][7:0] ^ 
                         processing_state;
 
   assign uio_out = 0;
