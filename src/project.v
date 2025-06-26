@@ -20,30 +20,30 @@ module tt_um_shinnosuke_fft (
   assign uo_out  = ena ? final_output : mega_result[7:0];
   
   // Extreme parameters to push Tiny Tapeout to its limits
-  parameter WIDTH = 65536;             // 64k bits (avoids 8k warning but still massive)
-  parameter LUT_SIZE = 65536;          // Huge lookup table
-  parameter NUM_MEGA_REGS = 512;       // 512 massive shift registers
-  parameter NUM_PROC_REGS = 256;       // 256 processing registers
-  parameter NUM_ACCUM_REGS = 128;      // 128 accumulator registers
-  parameter NUM_MEM_BANKS = 128;       // 128 memory banks each
+  parameter WIDTH = 8192;              // 8k bits (maximum without warnings, still massive)
+  parameter LUT_SIZE = 8192;           // Huge lookup table
+  parameter NUM_MEGA_REGS = 64;        // 64 massive shift registers (manageable for manual assignment)
+  parameter NUM_PROC_REGS = 32;        // 32 processing registers 
+  parameter NUM_ACCUM_REGS = 16;       // 16 accumulator registers
+  parameter NUM_MEM_BANKS = 16;        // 16 memory banks each
   
   // Massive register arrays to consume maximum resources
-  reg [WIDTH-1:0] mega_shift_reg [0:NUM_MEGA_REGS-1];   // 512 × 64k bit shift registers
-  reg [WIDTH-1:0] processing_reg [0:NUM_PROC_REGS-1];   // 256 × 64k bit processing registers
-  reg [WIDTH-1:0] accumulator_reg [0:NUM_ACCUM_REGS-1]; // 128 × 64k bit accumulator registers
-  reg [WIDTH*2-1:0] multiplication_reg [0:63];          // 64 × 128k bit multiplier registers
+  reg [WIDTH-1:0] mega_shift_reg [0:NUM_MEGA_REGS-1];   // 64 × 8k bit shift registers
+  reg [WIDTH-1:0] processing_reg [0:NUM_PROC_REGS-1];   // 32 × 8k bit processing registers
+  reg [WIDTH-1:0] accumulator_reg [0:NUM_ACCUM_REGS-1]; // 16 × 8k bit accumulator registers
+  reg [WIDTH*2-1:0] multiplication_reg [0:63];          // 64 × 16k bit multiplier registers
   
   // Additional massive register arrays for extreme resource consumption
-  reg [WIDTH-1:0] convolution_mem [0:NUM_MEM_BANKS-1];  // 128 × 64k bit convolution memory banks
-  reg [WIDTH-1:0] correlation_mem [0:NUM_MEM_BANKS-1];  // 128 × 64k bit correlation memory banks
-  reg [WIDTH-1:0] filter_mem [0:NUM_MEM_BANKS-1];       // 128 × 64k bit filter memory banks
-  reg [WIDTH-1:0] transform_mem [0:NUM_MEM_BANKS-1];    // 128 × 64k bit transform memory banks
+  reg [WIDTH-1:0] convolution_mem [0:NUM_MEM_BANKS-1];  // 16 × 8k bit convolution memory banks
+  reg [WIDTH-1:0] correlation_mem [0:NUM_MEM_BANKS-1];  // 16 × 8k bit correlation memory banks
+  reg [WIDTH-1:0] filter_mem [0:NUM_MEM_BANKS-1];       // 16 × 8k bit filter memory banks
+  reg [WIDTH-1:0] transform_mem [0:NUM_MEM_BANKS-1];    // 16 × 8k bit transform memory banks
   
   // Even more register arrays to maximize resource consumption
-  reg [WIDTH-1:0] dsp_mem [0:NUM_MEM_BANKS-1];          // 128 × 64k bit DSP memory banks
-  reg [WIDTH-1:0] neural_mem [0:NUM_MEM_BANKS-1];       // 128 × 64k bit neural memory banks
-  reg [WIDTH-1:0] matrix_mem [0:NUM_MEM_BANKS-1];       // 128 × 64k bit matrix memory banks
-  reg [WIDTH-1:0] signal_mem [0:NUM_MEM_BANKS-1];       // 128 × 64k bit signal memory banks
+  reg [WIDTH-1:0] dsp_mem [0:NUM_MEM_BANKS-1];          // 16 × 8k bit DSP memory banks
+  reg [WIDTH-1:0] neural_mem [0:NUM_MEM_BANKS-1];       // 16 × 8k bit neural memory banks
+  reg [WIDTH-1:0] matrix_mem [0:NUM_MEM_BANKS-1];       // 16 × 8k bit matrix memory banks
+  reg [WIDTH-1:0] signal_mem [0:NUM_MEM_BANKS-1];       // 16 × 8k bit signal memory banks
   
   // Complex state machine with many states
   reg [15:0] state_counter;
@@ -92,24 +92,24 @@ module tt_um_shinnosuke_fft (
     
     // FFT-like processing units - massively expanded
     for (i = 0; i < 32; i = i + 1) begin : fft_gen
-      assign fft_result[i] = mega_shift_reg[i*16] * mega_shift_reg[i*16+1] + 
-                             mega_shift_reg[i*16+2] * mega_shift_reg[i*16+3] +
-                             mega_shift_reg[i*16+4] * mega_shift_reg[i*16+5] +
-                             mega_shift_reg[i*16+6] * mega_shift_reg[i*16+7] +
-                             mega_shift_reg[i*16+8] * mega_shift_reg[i*16+9] +
-                             mega_shift_reg[i*16+10] * mega_shift_reg[i*16+11] +
-                             mega_shift_reg[i*16+12] * mega_shift_reg[i*16+13] +
-                             mega_shift_reg[i*16+14] * mega_shift_reg[i*16+15];
+      assign fft_result[i] = mega_shift_reg[i*2] * mega_shift_reg[(i*2+1)%NUM_MEGA_REGS] + 
+                             mega_shift_reg[(i*2+2)%NUM_MEGA_REGS] * mega_shift_reg[(i*2+3)%NUM_MEGA_REGS] +
+                             mega_shift_reg[(i*2+4)%NUM_MEGA_REGS] * mega_shift_reg[(i*2+5)%NUM_MEGA_REGS] +
+                             mega_shift_reg[(i*2+6)%NUM_MEGA_REGS] * mega_shift_reg[(i*2+7)%NUM_MEGA_REGS] +
+                             mega_shift_reg[(i*2+8)%NUM_MEGA_REGS] * mega_shift_reg[(i*2+9)%NUM_MEGA_REGS] +
+                             mega_shift_reg[(i*2+10)%NUM_MEGA_REGS] * mega_shift_reg[(i*2+11)%NUM_MEGA_REGS] +
+                             mega_shift_reg[(i*2+12)%NUM_MEGA_REGS] * mega_shift_reg[(i*2+13)%NUM_MEGA_REGS] +
+                             mega_shift_reg[(i*2+14)%NUM_MEGA_REGS] * mega_shift_reg[(i*2+15)%NUM_MEGA_REGS];
     end
     
     // Convolution processing units - massively expanded
     for (i = 0; i < 32; i = i + 1) begin : conv_gen
-      assign convolution_result[i] = processing_reg[i*8] * processing_reg[i*8+1] + 
-                                     processing_reg[i*8+2] * processing_reg[i*8+3] +
-                                     processing_reg[i*8+4] * processing_reg[i*8+5] +
-                                     processing_reg[i*8+6] * processing_reg[i*8+7] +
-                                     accumulator_reg[i*4] + accumulator_reg[i*4+1] +
-                                     accumulator_reg[i*4+2] + accumulator_reg[i*4+3];
+      assign convolution_result[i] = processing_reg[i] * processing_reg[(i+1)%NUM_PROC_REGS] + 
+                                     processing_reg[(i+2)%NUM_PROC_REGS] * processing_reg[(i+3)%NUM_PROC_REGS] +
+                                     processing_reg[(i+4)%NUM_PROC_REGS] * processing_reg[(i+5)%NUM_PROC_REGS] +
+                                     processing_reg[(i+6)%NUM_PROC_REGS] * processing_reg[(i+7)%NUM_PROC_REGS] +
+                                     accumulator_reg[i%NUM_ACCUM_REGS] + accumulator_reg[(i+1)%NUM_ACCUM_REGS] +
+                                     accumulator_reg[(i+2)%NUM_ACCUM_REGS] + accumulator_reg[(i+3)%NUM_ACCUM_REGS];
     end
     
     // Correlation processing units - massively expanded
@@ -122,48 +122,48 @@ module tt_um_shinnosuke_fft (
     for (i = 0; i < 32; i = i + 1) begin : filter_gen
       assign filter_result[i] = correlation_result[i] + 
                                 (ultra_wide_wire[i] & complex_wire[i*8]) +
-                                convolution_mem[i*4] + correlation_mem[i*4];
+                                convolution_mem[i%NUM_MEM_BANKS] + correlation_mem[i%NUM_MEM_BANKS];
     end
     
     // Additional processing units to maximize resource consumption
     // DCT (Discrete Cosine Transform) processing units - massively expanded
     for (i = 0; i < 32; i = i + 1) begin : dct_gen
-      assign dct_result[i] = mega_shift_reg[i*16] * mega_shift_reg[i*16+1] -
-                             mega_shift_reg[i*16+2] * mega_shift_reg[i*16+3] +
-                             mega_shift_reg[i*16+4] * mega_shift_reg[i*16+5] -
-                             mega_shift_reg[i*16+6] * mega_shift_reg[i*16+7] +
-                             mega_shift_reg[i*16+8] * mega_shift_reg[i*16+9] -
-                             mega_shift_reg[i*16+10] * mega_shift_reg[i*16+11] +
-                             mega_shift_reg[i*16+12] * mega_shift_reg[i*16+13] -
-                             mega_shift_reg[i*16+14] * mega_shift_reg[i*16+15];
+      assign dct_result[i] = mega_shift_reg[i*2] * mega_shift_reg[(i*2+1)%NUM_MEGA_REGS] -
+                             mega_shift_reg[(i*2+2)%NUM_MEGA_REGS] * mega_shift_reg[(i*2+3)%NUM_MEGA_REGS] +
+                             mega_shift_reg[(i*2+4)%NUM_MEGA_REGS] * mega_shift_reg[(i*2+5)%NUM_MEGA_REGS] -
+                             mega_shift_reg[(i*2+6)%NUM_MEGA_REGS] * mega_shift_reg[(i*2+7)%NUM_MEGA_REGS] +
+                             mega_shift_reg[(i*2+8)%NUM_MEGA_REGS] * mega_shift_reg[(i*2+9)%NUM_MEGA_REGS] -
+                             mega_shift_reg[(i*2+10)%NUM_MEGA_REGS] * mega_shift_reg[(i*2+11)%NUM_MEGA_REGS] +
+                             mega_shift_reg[(i*2+12)%NUM_MEGA_REGS] * mega_shift_reg[(i*2+13)%NUM_MEGA_REGS] -
+                             mega_shift_reg[(i*2+14)%NUM_MEGA_REGS] * mega_shift_reg[(i*2+15)%NUM_MEGA_REGS];
     end
     
     // Wavelet processing units - massively expanded
     for (i = 0; i < 32; i = i + 1) begin : wavelet_gen
-      assign wavelet_result[i] = processing_reg[i*8] * accumulator_reg[i*4] +
-                                 processing_reg[i*8+1] * accumulator_reg[i*4+1] +
-                                 processing_reg[i*8+2] * accumulator_reg[i*4+2] +
-                                 processing_reg[i*8+3] * accumulator_reg[i*4+3] +
-                                 convolution_mem[i*4] * correlation_mem[i*4] +
-                                 filter_mem[i*4] * transform_mem[i*4] +
-                                 dsp_mem[i*4] * neural_mem[i*4] +
-                                 matrix_mem[i*4] * signal_mem[i*4];
+      assign wavelet_result[i] = processing_reg[i] * accumulator_reg[i%NUM_ACCUM_REGS] +
+                                 processing_reg[(i+1)%NUM_PROC_REGS] * accumulator_reg[(i+1)%NUM_ACCUM_REGS] +
+                                 processing_reg[(i+2)%NUM_PROC_REGS] * accumulator_reg[(i+2)%NUM_ACCUM_REGS] +
+                                 processing_reg[(i+3)%NUM_PROC_REGS] * accumulator_reg[(i+3)%NUM_ACCUM_REGS] +
+                                 convolution_mem[i%NUM_MEM_BANKS] * correlation_mem[i%NUM_MEM_BANKS] +
+                                 filter_mem[i%NUM_MEM_BANKS] * transform_mem[i%NUM_MEM_BANKS] +
+                                 dsp_mem[i%NUM_MEM_BANKS] * neural_mem[i%NUM_MEM_BANKS] +
+                                 matrix_mem[i%NUM_MEM_BANKS] * signal_mem[i%NUM_MEM_BANKS];
     end
     
     // Matrix multiplication processing units - massively expanded
     for (i = 0; i < 32; i = i + 1) begin : matrix_gen
-      assign matrix_result[i] = (mega_shift_reg[i*16] * processing_reg[i*8]) +
-                                (mega_shift_reg[i*16+1] * processing_reg[i*8+1]) +
-                                (mega_shift_reg[i*16+2] * processing_reg[i*8+2]) +
-                                (mega_shift_reg[i*16+3] * processing_reg[i*8+3]) +
-                                (mega_shift_reg[i*16+4] * processing_reg[i*8+4]) +
-                                (mega_shift_reg[i*16+5] * processing_reg[i*8+5]) +
-                                (mega_shift_reg[i*16+6] * processing_reg[i*8+6]) +
-                                (mega_shift_reg[i*16+7] * processing_reg[i*8+7]) +
-                                (accumulator_reg[i*4] * convolution_mem[i*4]) +
-                                (accumulator_reg[i*4+1] * correlation_mem[i*4]) +
-                                (accumulator_reg[i*4+2] * filter_mem[i*4]) +
-                                (accumulator_reg[i*4+3] * transform_mem[i*4]);
+      assign matrix_result[i] = (mega_shift_reg[i*2] * processing_reg[i]) +
+                                (mega_shift_reg[(i*2+1)%NUM_MEGA_REGS] * processing_reg[(i+1)%NUM_PROC_REGS]) +
+                                (mega_shift_reg[(i*2+2)%NUM_MEGA_REGS] * processing_reg[(i+2)%NUM_PROC_REGS]) +
+                                (mega_shift_reg[(i*2+3)%NUM_MEGA_REGS] * processing_reg[(i+3)%NUM_PROC_REGS]) +
+                                (mega_shift_reg[(i*2+4)%NUM_MEGA_REGS] * processing_reg[(i+4)%NUM_PROC_REGS]) +
+                                (mega_shift_reg[(i*2+5)%NUM_MEGA_REGS] * processing_reg[(i+5)%NUM_PROC_REGS]) +
+                                (mega_shift_reg[(i*2+6)%NUM_MEGA_REGS] * processing_reg[(i+6)%NUM_PROC_REGS]) +
+                                (mega_shift_reg[(i*2+7)%NUM_MEGA_REGS] * processing_reg[(i+7)%NUM_PROC_REGS]) +
+                                (accumulator_reg[i%NUM_ACCUM_REGS] * convolution_mem[i%NUM_MEM_BANKS]) +
+                                (accumulator_reg[(i+1)%NUM_ACCUM_REGS] * correlation_mem[i%NUM_MEM_BANKS]) +
+                                (accumulator_reg[(i+2)%NUM_ACCUM_REGS] * filter_mem[i%NUM_MEM_BANKS]) +
+                                (accumulator_reg[(i+3)%NUM_ACCUM_REGS] * transform_mem[i%NUM_MEM_BANKS]);
     end
     
     // Neural network-like processing units - massively expanded
@@ -172,8 +172,8 @@ module tt_um_shinnosuke_fft (
                                 (correlation_result[i] * filter_result[i]) +
                                 (dct_result[i] * wavelet_result[i]) +
                                 (matrix_result[i] * ultra_wide_wire[i]) +
-                                (dsp_mem[i*4] * neural_mem[i*4]) +
-                                (matrix_mem[i*4] * signal_mem[i*4]) +
+                                (dsp_mem[i%NUM_MEM_BANKS] * neural_mem[i%NUM_MEM_BANKS]) +
+                                (matrix_mem[i%NUM_MEM_BANKS] * signal_mem[i%NUM_MEM_BANKS]) +
                                 complex_wire[i*8] + complex_wire[i*8+1];
     end
   endgenerate
@@ -204,32 +204,88 @@ module tt_um_shinnosuke_fft (
     end
   end
 
-  // Complex sequential logic with maximum resource usage
+  // Complex sequential logic with maximum resource usage - using generate for individual always blocks
+  genvar j;
+  generate
+    // Generate individual always blocks for each mega_shift_reg
+    for (j = 0; j < NUM_MEGA_REGS; j = j + 1) begin : mega_shift_gen
+      always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+          mega_shift_reg[j] <= {WIDTH{1'b0}};
+        end else if (ena) begin
+          mega_shift_reg[j] <= {mega_shift_reg[j][WIDTH-9:0], ui_in ^ uio_in ^ j[7:0]};
+        end
+      end
+    end
+    
+    // Generate individual always blocks for each processing_reg
+    for (j = 0; j < NUM_PROC_REGS; j = j + 1) begin : proc_reg_gen
+      always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+          processing_reg[j] <= {WIDTH{1'b0}};
+        end else if (ena) begin
+          processing_reg[j] <= mega_shift_reg[j*2] + mega_shift_reg[(j*2+1)%NUM_MEGA_REGS] + 
+                               (cycle_counter[j%32] ? processing_reg[j] : ~processing_reg[j]);
+        end
+      end
+    end
+    
+    // Generate individual always blocks for each accumulator_reg
+    for (j = 0; j < NUM_ACCUM_REGS; j = j + 1) begin : accum_reg_gen
+      always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+          accumulator_reg[j] <= {WIDTH{1'b0}};
+        end else if (ena) begin
+          accumulator_reg[j] <= accumulator_reg[j] + 
+                                processing_reg[j*2] + processing_reg[(j*2+1)%NUM_PROC_REGS] + 
+                                mega_shift_reg[j*4];
+        end
+      end
+    end
+    
+    // Generate individual always blocks for each multiplication_reg
+    for (j = 0; j < 64; j = j + 1) begin : mult_reg_gen
+      always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+          multiplication_reg[j] <= {WIDTH*2{1'b0}};
+        end else if (ena) begin
+          multiplication_reg[j] <= mega_shift_reg[j%NUM_MEGA_REGS] * mega_shift_reg[(j+4)%NUM_MEGA_REGS] + 
+                                   processing_reg[j%NUM_PROC_REGS] * accumulator_reg[(j*2)%NUM_ACCUM_REGS] +
+                                   convolution_mem[j%NUM_MEM_BANKS] * correlation_mem[j%NUM_MEM_BANKS] +
+                                   filter_mem[j%NUM_MEM_BANKS] * transform_mem[j%NUM_MEM_BANKS];
+        end
+      end
+    end
+    
+    // Generate individual always blocks for each memory bank
+    for (j = 0; j < NUM_MEM_BANKS; j = j + 1) begin : mem_bank_gen
+      always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+          convolution_mem[j] <= {WIDTH{1'b0}};
+          correlation_mem[j] <= {WIDTH{1'b0}};
+          filter_mem[j] <= {WIDTH{1'b0}};
+          transform_mem[j] <= {WIDTH{1'b0}};
+          dsp_mem[j] <= {WIDTH{1'b0}};
+          neural_mem[j] <= {WIDTH{1'b0}};
+          matrix_mem[j] <= {WIDTH{1'b0}};
+          signal_mem[j] <= {WIDTH{1'b0}};
+        end else if (ena) begin
+          convolution_mem[j] <= convolution_mem[j] + mega_shift_reg[j*4] + processing_reg[j*2];
+          correlation_mem[j] <= correlation_mem[j] ^ accumulator_reg[j%NUM_ACCUM_REGS];
+          filter_mem[j] <= filter_mem[j] * mega_shift_reg[(j*4+32)%NUM_MEGA_REGS];
+          transform_mem[j] <= transform_mem[j] + convolution_mem[j] + correlation_mem[j];
+          dsp_mem[j] <= dsp_mem[j] + mega_shift_reg[j*4] * processing_reg[j*2];
+          neural_mem[j] <= neural_mem[j] * accumulator_reg[j%NUM_ACCUM_REGS] + convolution_mem[j];
+          matrix_mem[j] <= matrix_mem[j] + correlation_mem[j] * filter_mem[j];
+          signal_mem[j] <= signal_mem[j] ^ transform_mem[j] + dsp_mem[j];
+        end
+      end
+    end
+  endgenerate
+  
+  // State machine and counters
   always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-      // Reset all massive registers
-      for (integer idx = 0; idx < NUM_MEGA_REGS; idx = idx + 1) begin
-        mega_shift_reg[idx] <= {WIDTH{1'b0}};
-      end
-      for (integer idx = 0; idx < NUM_PROC_REGS; idx = idx + 1) begin
-        processing_reg[idx] <= {WIDTH{1'b0}};
-      end
-      for (integer idx = 0; idx < NUM_ACCUM_REGS; idx = idx + 1) begin
-        accumulator_reg[idx] <= {WIDTH{1'b0}};
-      end
-      for (integer idx = 0; idx < NUM_MEM_BANKS; idx = idx + 1) begin
-        convolution_mem[idx] <= {WIDTH{1'b0}};
-        correlation_mem[idx] <= {WIDTH{1'b0}};
-        filter_mem[idx] <= {WIDTH{1'b0}};
-        transform_mem[idx] <= {WIDTH{1'b0}};
-        dsp_mem[idx] <= {WIDTH{1'b0}};
-        neural_mem[idx] <= {WIDTH{1'b0}};
-        matrix_mem[idx] <= {WIDTH{1'b0}};
-        signal_mem[idx] <= {WIDTH{1'b0}};
-      end
-      for (integer idx = 0; idx < 64; idx = idx + 1) begin
-        multiplication_reg[idx] <= {WIDTH*2{1'b0}};
-      end
       state_counter <= 16'b0;
       processing_state <= 8'b0;
       cycle_counter <= 32'b0;
@@ -238,108 +294,10 @@ module tt_um_shinnosuke_fft (
       state_counter <= state_counter + 1;
       processing_state <= processing_state + 1;
       
-      // Complex shift register operations - massively expanded
-      for (integer idx = 0; idx < NUM_MEGA_REGS; idx = idx + 1) begin
-        mega_shift_reg[idx] <= {mega_shift_reg[idx][WIDTH-9:0], ui_in ^ uio_in ^ idx[7:0]};
-      end
-      
-      // Processing register updates with complex operations - massively expanded
-      for (integer idx = 0; idx < NUM_PROC_REGS; idx = idx + 1) begin
-        processing_reg[idx] <= mega_shift_reg[idx*2] + mega_shift_reg[(idx*2+1)%NUM_MEGA_REGS] + 
-                               (cycle_counter[idx%32] ? processing_reg[idx] : ~processing_reg[idx]);
-      end
-      
-      // Accumulator operations - massively expanded
-      for (integer idx = 0; idx < NUM_ACCUM_REGS; idx = idx + 1) begin
-        accumulator_reg[idx] <= accumulator_reg[idx] + 
-                                processing_reg[idx*2] + processing_reg[(idx*2+1)%NUM_PROC_REGS] + 
-                                mega_shift_reg[idx*4];
-      end
-      
-      // Multiplication register operations - massively expanded
-      for (integer idx = 0; idx < 64; idx = idx + 1) begin
-        multiplication_reg[idx] <= mega_shift_reg[idx*8] * mega_shift_reg[(idx*8+4)%NUM_MEGA_REGS] + 
-                                   processing_reg[idx*4] * accumulator_reg[(idx*2)%NUM_ACCUM_REGS] +
-                                   convolution_mem[idx*2] * correlation_mem[idx*2] +
-                                   filter_mem[idx*2] * transform_mem[idx*2];
-      end
-      
-      // Additional memory operations for extreme resource usage - massively expanded
-      for (integer idx = 0; idx < NUM_MEM_BANKS; idx = idx + 1) begin
-        convolution_mem[idx] <= convolution_mem[idx] + mega_shift_reg[idx*4] + processing_reg[idx*2];
-        correlation_mem[idx] <= correlation_mem[idx] ^ accumulator_reg[idx%NUM_ACCUM_REGS];
-        filter_mem[idx] <= filter_mem[idx] * mega_shift_reg[(idx*4+32)%NUM_MEGA_REGS];
-        transform_mem[idx] <= transform_mem[idx] + convolution_mem[idx] + correlation_mem[idx];
-        dsp_mem[idx] <= dsp_mem[idx] + mega_shift_reg[idx*4] * processing_reg[idx*2];
-        neural_mem[idx] <= neural_mem[idx] * accumulator_reg[idx%NUM_ACCUM_REGS] + convolution_mem[idx];
-        matrix_mem[idx] <= matrix_mem[idx] + correlation_mem[idx] * filter_mem[idx];
-        signal_mem[idx] <= signal_mem[idx] ^ transform_mem[idx] + dsp_mem[idx];
-      end
-      
       // Complex lookup table operations
-      mega_lut[state_counter[15:0]] <= mega_lut[state_counter[15:0]] ^ 
+      mega_lut[state_counter[12:0]] <= mega_lut[state_counter[12:0]] ^ 
                                        mega_result ^ 
                                        {cycle_counter, cycle_counter};
-      
-      // Additional complex operations to maximize resource usage - massively expanded
-      case (processing_state[3:0])
-        4'b0000: begin
-          for (integer idx = 0; idx < NUM_ACCUM_REGS; idx = idx + 1) begin
-            accumulator_reg[idx] <= accumulator_reg[idx] * processing_reg[idx*2] + 
-                                    convolution_mem[idx*4] * correlation_mem[idx*4];
-          end
-        end
-        4'b0001: begin
-          for (integer idx = 0; idx < NUM_PROC_REGS; idx = idx + 1) begin
-            processing_reg[idx] <= processing_reg[idx] + mega_shift_reg[idx*2][WIDTH-1:WIDTH-32] +
-                                   convolution_mem[idx%NUM_MEM_BANKS] + correlation_mem[idx%NUM_MEM_BANKS];
-          end
-        end
-        4'b0010: begin
-          for (integer idx = 0; idx < 64; idx = idx + 1) begin
-            multiplication_reg[idx] <= multiplication_reg[idx] + 
-                                       {accumulator_reg[idx*2], accumulator_reg[(idx*2+1)%NUM_ACCUM_REGS]} +
-                                       (convolution_mem[idx*2] * correlation_mem[idx*2]);
-          end
-        end
-        4'b0011: begin
-          for (integer idx = 0; idx < NUM_MEM_BANKS; idx = idx + 1) begin
-            convolution_mem[idx] <= convolution_mem[idx] * correlation_mem[idx] +
-                                    filter_mem[idx] + transform_mem[idx] + dsp_mem[idx];
-          end
-        end
-        4'b0100: begin
-          for (integer idx = 0; idx < NUM_MEM_BANKS; idx = idx + 1) begin
-            filter_mem[idx] <= filter_mem[idx] + transform_mem[idx] + neural_mem[idx] +
-                               mega_shift_reg[idx*4] * processing_reg[idx*2];
-          end
-        end
-        4'b0101: begin
-          for (integer idx = 0; idx < NUM_MEM_BANKS; idx = idx + 1) begin
-            transform_mem[idx] <= transform_mem[idx] + convolution_mem[idx] * correlation_mem[idx] +
-                                  filter_mem[idx] * mega_shift_reg[idx*4] + matrix_mem[idx];
-          end
-        end
-        4'b0110: begin
-          for (integer idx = 0; idx < NUM_MEGA_REGS; idx = idx + 1) begin
-            mega_shift_reg[idx] <= mega_shift_reg[idx] + 
-                                   (mega_shift_reg[(idx+1)%NUM_MEGA_REGS] * mega_shift_reg[(idx+2)%NUM_MEGA_REGS]);
-          end
-        end
-        4'b0111: begin
-          for (integer idx = 0; idx < NUM_PROC_REGS; idx = idx + 1) begin
-            processing_reg[idx] <= processing_reg[idx] * 
-                                   (convolution_mem[idx%NUM_MEM_BANKS] + correlation_mem[idx%NUM_MEM_BANKS] + 
-                                    filter_mem[idx%NUM_MEM_BANKS] + signal_mem[idx%NUM_MEM_BANKS]);
-          end
-        end
-        default: begin
-          for (integer idx = 0; idx < NUM_MEGA_REGS; idx = idx + 1) begin
-            mega_shift_reg[idx] <= mega_shift_reg[idx] ^ complex_wire[idx%256][WIDTH-1:0] +
-                                   (mega_shift_reg[(idx+32)%NUM_MEGA_REGS] * mega_shift_reg[(idx+16)%NUM_MEGA_REGS]);
-          end
-        end
-      endcase
     end
   end
   
