@@ -31,7 +31,7 @@ module tt_um_shinnosuke_fft (
   reg [WIDTH-1:0] mega_shift_reg [0:NUM_MEGA_REGS-1];   // 64 × 8k bit shift registers
   reg [WIDTH-1:0] processing_reg [0:NUM_PROC_REGS-1];   // 32 × 8k bit processing registers
   reg [WIDTH-1:0] accumulator_reg [0:NUM_ACCUM_REGS-1]; // 16 × 8k bit accumulator registers
-  reg [WIDTH*2-1:0] multiplication_reg [0:63];          // 64 × 16k bit multiplier registers
+  reg [WIDTH-1:0] multiplication_reg [0:63];          // 64 × 8k bit multiplier registers (reduced from WIDTH*2)
   
   // Additional massive register arrays for extreme resource consumption
   reg [WIDTH-1:0] convolution_mem [0:NUM_MEM_BANKS-1];  // 16 × 8k bit convolution memory banks
@@ -194,7 +194,9 @@ module tt_um_shinnosuke_fft (
                        {63'b0, ^matrix_result[0]} +
                        {63'b0, ^matrix_result[1]} +
                        {63'b0, ^neural_result[0]} +
-                       {63'b0, ^neural_result[1]};
+                       {63'b0, ^neural_result[1]} +
+                       {63'b0, ^multiplication_reg[0]} +
+                       {63'b0, ^multiplication_reg[1]};
 
   // Initialize mega lookup table outside always block
   integer init_idx;
@@ -247,7 +249,7 @@ module tt_um_shinnosuke_fft (
     for (j = 0; j < 64; j = j + 1) begin : mult_reg_gen
       always @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-          multiplication_reg[j] <= {WIDTH*2{1'b0}};
+          multiplication_reg[j] <= {WIDTH{1'b0}};
         end else if (ena) begin
           multiplication_reg[j] <= mega_shift_reg[j%NUM_MEGA_REGS] * mega_shift_reg[(j+4)%NUM_MEGA_REGS] + 
                                    processing_reg[j%NUM_PROC_REGS] * accumulator_reg[(j*2)%NUM_ACCUM_REGS] +
@@ -303,8 +305,8 @@ module tt_um_shinnosuke_fft (
   
   // Final output computation with maximum complexity
   assign final_output = mega_result[7:0] ^ 
-                        mega_lut[{8'h0, ui_in}][7:0] ^ 
-                        mega_lut[{8'h0, uio_in}][7:0] ^ 
+                        mega_lut[ui_in][7:0] ^ 
+                        mega_lut[uio_in][7:0] ^ 
                         processing_state;
 
   assign uio_out = 0;
