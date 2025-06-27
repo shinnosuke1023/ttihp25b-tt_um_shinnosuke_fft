@@ -22,6 +22,9 @@ module tt_um_shinnosuke_fft (
   assign in1 = ui_in[3:0];
   assign in2 = ui_in[7:4];
 
+  wire [7:0] null_wire;
+  assign null_wire = ui_in + uio_in; // Example: null_wire is the sum of ui_in and uio_in
+
   // 256個の乗算器を定義
   wire [7:0] multiply1, multiply2, multiply3, multiply4, multiply5, multiply6, multiply7, multiply8, 
              multiply9, multiply10, multiply11, multiply12, multiply13, multiply14, multiply15, multiply16,
@@ -622,6 +625,6 @@ module tt_um_shinnosuke_fft (
   assign uio_oe  = 0;
 
   // List all unused inputs to prevent warnings
-  wire _unused = &{ena, clk, rst_n, 1'b0};
+  wire _unused = &{null_wire, uio_in,ena, clk, rst_n, 1'b0};
 
 endmodule
