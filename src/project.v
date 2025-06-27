@@ -19,8 +19,8 @@ module tt_um_shinnosuke_fft (
   // All output pins must be assigned. If not used, assign to 0.
   // assign uo_out  = ui_in + uio_in;  // Example: ou_out is the sum of ui_in and uio_in
   wire [3:0] in1, in2;
-  wire [7:0] null;
-  assign null = ui_in + uio_in; // Dummy assignment to prevent unused input warning
+  wire [7:0] null_wire;
+  assign null_wire = ui_in + uio_in; // Dummy assignment to prevent unused input warning
   assign in1 = ui_in[3:0];
   assign in2 = ui_in[7:4];
 
