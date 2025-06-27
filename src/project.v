@@ -22,7 +22,7 @@ module tt_um_shinnosuke_fft (
   assign in1 = ui_in[3:0];
   assign in2 = ui_in[7:4];
 
-  // 128個の乗算器を定義
+  // 256個の乗算器を定義
   wire [7:0] multiply1, multiply2, multiply3, multiply4, multiply5, multiply6, multiply7, multiply8, 
              multiply9, multiply10, multiply11, multiply12, multiply13, multiply14, multiply15, multiply16,
              multiply17, multiply18, multiply19, multiply20, multiply21, multiply22, multiply23, multiply24,
@@ -38,9 +38,25 @@ module tt_um_shinnosuke_fft (
              multiply97, multiply98, multiply99, multiply100, multiply101, multiply102, multiply103, multiply104,
              multiply105, multiply106, multiply107, multiply108, multiply109, multiply110, multiply111, multiply112,
              multiply113, multiply114, multiply115, multiply116, multiply117, multiply118, multiply119, multiply120,
-             multiply121, multiply122, multiply123, multiply124, multiply125, multiply126, multiply127, multiply128;
+             multiply121, multiply122, multiply123, multiply124, multiply125, multiply126, multiply127, multiply128,
+             multiply129, multiply130, multiply131, multiply132, multiply133, multiply134, multiply135, multiply136,
+             multiply137, multiply138, multiply139, multiply140, multiply141, multiply142, multiply143, multiply144,
+             multiply145, multiply146, multiply147, multiply148, multiply149, multiply150, multiply151, multiply152,
+             multiply153, multiply154, multiply155, multiply156, multiply157, multiply158, multiply159, multiply160,
+             multiply161, multiply162, multiply163, multiply164, multiply165, multiply166, multiply167, multiply168,
+             multiply169, multiply170, multiply171, multiply172, multiply173, multiply174, multiply175, multiply176,
+             multiply177, multiply178, multiply179, multiply180, multiply181, multiply182, multiply183, multiply184,
+             multiply185, multiply186, multiply187, multiply188, multiply189, multiply190, multiply191, multiply192,
+             multiply193, multiply194, multiply195, multiply196, multiply197, multiply198, multiply199, multiply200,
+             multiply201, multiply202, multiply203, multiply204, multiply205, multiply206, multiply207, multiply208,
+             multiply209, multiply210, multiply211, multiply212, multiply213, multiply214, multiply215, multiply216,
+             multiply217, multiply218, multiply219, multiply220, multiply221, multiply222, multiply223, multiply224,
+             multiply225, multiply226, multiply227, multiply228, multiply229, multiply230, multiply231, multiply232,
+             multiply233, multiply234, multiply235, multiply236, multiply237, multiply238, multiply239, multiply240,
+             multiply241, multiply242, multiply243, multiply244, multiply245, multiply246, multiply247, multiply248,
+             multiply249, multiply250, multiply251, multiply252, multiply253, multiply254, multiply255, multiply256;
 
-  // より複雑な積和演算パターンを実装（128個の乗算器）
+  // より複雑な積和演算パターンを実装（256個の乗算器）
   assign multiply1 = in1 * in2;
   assign multiply2 = in1 * in2;
   assign multiply3 = in1 * in2;
@@ -169,7 +185,135 @@ module tt_um_shinnosuke_fft (
   assign multiply126 = in1 * in2;
   assign multiply127 = in1 * in2;
   assign multiply128 = in1 * in2;
-  // 第1レベルの加算（128個 → 64個）
+  assign multiply129 = in1 * in2;
+  assign multiply130 = in1 * in2;
+  assign multiply131 = in1 * in2;
+  assign multiply132 = in1 * in2;
+  assign multiply133 = in1 * in2;
+  assign multiply134 = in1 * in2;
+  assign multiply135 = in1 * in2;
+  assign multiply136 = in1 * in2;
+  assign multiply137 = in1 * in2;
+  assign multiply138 = in1 * in2;
+  assign multiply139 = in1 * in2;
+  assign multiply140 = in1 * in2;
+  assign multiply141 = in1 * in2;
+  assign multiply142 = in1 * in2;
+  assign multiply143 = in1 * in2;
+  assign multiply144 = in1 * in2;
+  assign multiply145 = in1 * in2;
+  assign multiply146 = in1 * in2;
+  assign multiply147 = in1 * in2;
+  assign multiply148 = in1 * in2;
+  assign multiply149 = in1 * in2;
+  assign multiply150 = in1 * in2;
+  assign multiply151 = in1 * in2;
+  assign multiply152 = in1 * in2;
+  assign multiply153 = in1 * in2;
+  assign multiply154 = in1 * in2;
+  assign multiply155 = in1 * in2;
+  assign multiply156 = in1 * in2;
+  assign multiply157 = in1 * in2;
+  assign multiply158 = in1 * in2;
+  assign multiply159 = in1 * in2;
+  assign multiply160 = in1 * in2;
+  assign multiply161 = in1 * in2;
+  assign multiply162 = in1 * in2;
+  assign multiply163 = in1 * in2;
+  assign multiply164 = in1 * in2;
+  assign multiply165 = in1 * in2;
+  assign multiply166 = in1 * in2;
+  assign multiply167 = in1 * in2;
+  assign multiply168 = in1 * in2;
+  assign multiply169 = in1 * in2;
+  assign multiply170 = in1 * in2;
+  assign multiply171 = in1 * in2;
+  assign multiply172 = in1 * in2;
+  assign multiply173 = in1 * in2;
+  assign multiply174 = in1 * in2;
+  assign multiply175 = in1 * in2;
+  assign multiply176 = in1 * in2;
+  assign multiply177 = in1 * in2;
+  assign multiply178 = in1 * in2;
+  assign multiply179 = in1 * in2;
+  assign multiply180 = in1 * in2;
+  assign multiply181 = in1 * in2;
+  assign multiply182 = in1 * in2;
+  assign multiply183 = in1 * in2;
+  assign multiply184 = in1 * in2;
+  assign multiply185 = in1 * in2;
+  assign multiply186 = in1 * in2;
+  assign multiply187 = in1 * in2;
+  assign multiply188 = in1 * in2;
+  assign multiply189 = in1 * in2;
+  assign multiply190 = in1 * in2;
+  assign multiply191 = in1 * in2;
+  assign multiply192 = in1 * in2;
+  assign multiply193 = in1 * in2;
+  assign multiply194 = in1 * in2;
+  assign multiply195 = in1 * in2;
+  assign multiply196 = in1 * in2;
+  assign multiply197 = in1 * in2;
+  assign multiply198 = in1 * in2;
+  assign multiply199 = in1 * in2;
+  assign multiply200 = in1 * in2;
+  assign multiply201 = in1 * in2;
+  assign multiply202 = in1 * in2;
+  assign multiply203 = in1 * in2;
+  assign multiply204 = in1 * in2;
+  assign multiply205 = in1 * in2;
+  assign multiply206 = in1 * in2;
+  assign multiply207 = in1 * in2;
+  assign multiply208 = in1 * in2;
+  assign multiply209 = in1 * in2;
+  assign multiply210 = in1 * in2;
+  assign multiply211 = in1 * in2;
+  assign multiply212 = in1 * in2;
+  assign multiply213 = in1 * in2;
+  assign multiply214 = in1 * in2;
+  assign multiply215 = in1 * in2;
+  assign multiply216 = in1 * in2;
+  assign multiply217 = in1 * in2;
+  assign multiply218 = in1 * in2;
+  assign multiply219 = in1 * in2;
+  assign multiply220 = in1 * in2;
+  assign multiply221 = in1 * in2;
+  assign multiply222 = in1 * in2;
+  assign multiply223 = in1 * in2;
+  assign multiply224 = in1 * in2;
+  assign multiply225 = in1 * in2;
+  assign multiply226 = in1 * in2;
+  assign multiply227 = in1 * in2;
+  assign multiply228 = in1 * in2;
+  assign multiply229 = in1 * in2;
+  assign multiply230 = in1 * in2;
+  assign multiply231 = in1 * in2;
+  assign multiply232 = in1 * in2;
+  assign multiply233 = in1 * in2;
+  assign multiply234 = in1 * in2;
+  assign multiply235 = in1 * in2;
+  assign multiply236 = in1 * in2;
+  assign multiply237 = in1 * in2;
+  assign multiply238 = in1 * in2;
+  assign multiply239 = in1 * in2;
+  assign multiply240 = in1 * in2;
+  assign multiply241 = in1 * in2;
+  assign multiply242 = in1 * in2;
+  assign multiply243 = in1 * in2;
+  assign multiply244 = in1 * in2;
+  assign multiply245 = in1 * in2;
+  assign multiply246 = in1 * in2;
+  assign multiply247 = in1 * in2;
+  assign multiply248 = in1 * in2;
+  assign multiply249 = in1 * in2;
+  assign multiply250 = in1 * in2;
+  assign multiply251 = in1 * in2;
+  assign multiply252 = in1 * in2;
+  assign multiply253 = in1 * in2;
+  assign multiply254 = in1 * in2;
+  assign multiply255 = in1 * in2;
+  assign multiply256 = in1 * in2;
+  // 第1レベルの加算（256個 → 128個）
   wire [7:0] sum11, sum12, sum13, sum14, sum15, sum16, sum17, sum18,
              sum19, sum110, sum111, sum112, sum113, sum114, sum115, sum116,
              sum117, sum118, sum119, sum120, sum121, sum122, sum123, sum124,
@@ -177,7 +321,15 @@ module tt_um_shinnosuke_fft (
              sum133, sum134, sum135, sum136, sum137, sum138, sum139, sum140,
              sum141, sum142, sum143, sum144, sum145, sum146, sum147, sum148,
              sum149, sum150, sum151, sum152, sum153, sum154, sum155, sum156,
-             sum157, sum158, sum159, sum160, sum161, sum162, sum163, sum164;
+             sum157, sum158, sum159, sum160, sum161, sum162, sum163, sum164,
+             sum165, sum166, sum167, sum168, sum169, sum170, sum171, sum172,
+             sum173, sum174, sum175, sum176, sum177, sum178, sum179, sum180,
+             sum181, sum182, sum183, sum184, sum185, sum186, sum187, sum188,
+             sum189, sum190, sum191, sum192, sum193, sum194, sum195, sum196,
+             sum197, sum198, sum199, sum1100, sum1101, sum1102, sum1103, sum1104,
+             sum1105, sum1106, sum1107, sum1108, sum1109, sum1110, sum1111, sum1112,
+             sum1113, sum1114, sum1115, sum1116, sum1117, sum1118, sum1119, sum1120,
+             sum1121, sum1122, sum1123, sum1124, sum1125, sum1126, sum1127, sum1128;
   assign sum11 = multiply1 + multiply2;
   assign sum12 = multiply3 + multiply4;
   assign sum13 = multiply5 + multiply6;
@@ -242,11 +394,79 @@ module tt_um_shinnosuke_fft (
   assign sum162 = multiply123 + multiply124;
   assign sum163 = multiply125 + multiply126;
   assign sum164 = multiply127 + multiply128;
-  // 第2レベルの加算（64個 → 32個）
+  assign sum165 = multiply129 + multiply130;
+  assign sum166 = multiply131 + multiply132;
+  assign sum167 = multiply133 + multiply134;
+  assign sum168 = multiply135 + multiply136;
+  assign sum169 = multiply137 + multiply138;
+  assign sum170 = multiply139 + multiply140;
+  assign sum171 = multiply141 + multiply142;
+  assign sum172 = multiply143 + multiply144;
+  assign sum173 = multiply145 + multiply146;
+  assign sum174 = multiply147 + multiply148;
+  assign sum175 = multiply149 + multiply150;
+  assign sum176 = multiply151 + multiply152;
+  assign sum177 = multiply153 + multiply154;
+  assign sum178 = multiply155 + multiply156;
+  assign sum179 = multiply157 + multiply158;
+  assign sum180 = multiply159 + multiply160;
+  assign sum181 = multiply161 + multiply162;
+  assign sum182 = multiply163 + multiply164;
+  assign sum183 = multiply165 + multiply166;
+  assign sum184 = multiply167 + multiply168;
+  assign sum185 = multiply169 + multiply170;
+  assign sum186 = multiply171 + multiply172;
+  assign sum187 = multiply173 + multiply174;
+  assign sum188 = multiply175 + multiply176;
+  assign sum189 = multiply177 + multiply178;
+  assign sum190 = multiply179 + multiply180;
+  assign sum191 = multiply181 + multiply182;
+  assign sum192 = multiply183 + multiply184;
+  assign sum193 = multiply185 + multiply186;
+  assign sum194 = multiply187 + multiply188;
+  assign sum195 = multiply189 + multiply190;
+  assign sum196 = multiply191 + multiply192;
+  assign sum197 = multiply193 + multiply194;
+  assign sum198 = multiply195 + multiply196;
+  assign sum199 = multiply197 + multiply198;
+  assign sum1100 = multiply199 + multiply200;
+  assign sum1101 = multiply201 + multiply202;
+  assign sum1102 = multiply203 + multiply204;
+  assign sum1103 = multiply205 + multiply206;
+  assign sum1104 = multiply207 + multiply208;
+  assign sum1105 = multiply209 + multiply210;
+  assign sum1106 = multiply211 + multiply212;
+  assign sum1107 = multiply213 + multiply214;
+  assign sum1108 = multiply215 + multiply216;
+  assign sum1109 = multiply217 + multiply218;
+  assign sum1110 = multiply219 + multiply220;
+  assign sum1111 = multiply221 + multiply222;
+  assign sum1112 = multiply223 + multiply224;
+  assign sum1113 = multiply225 + multiply226;
+  assign sum1114 = multiply227 + multiply228;
+  assign sum1115 = multiply229 + multiply230;
+  assign sum1116 = multiply231 + multiply232;
+  assign sum1117 = multiply233 + multiply234;
+  assign sum1118 = multiply235 + multiply236;
+  assign sum1119 = multiply237 + multiply238;
+  assign sum1120 = multiply239 + multiply240;
+  assign sum1121 = multiply241 + multiply242;
+  assign sum1122 = multiply243 + multiply244;
+  assign sum1123 = multiply245 + multiply246;
+  assign sum1124 = multiply247 + multiply248;
+  assign sum1125 = multiply249 + multiply250;
+  assign sum1126 = multiply251 + multiply252;
+  assign sum1127 = multiply253 + multiply254;
+  assign sum1128 = multiply255 + multiply256;
+  // 第2レベルの加算（128個 → 64個）
   wire [7:0] sum21, sum22, sum23, sum24, sum25, sum26, sum27, sum28,
              sum29, sum210, sum211, sum212, sum213, sum214, sum215, sum216,
              sum217, sum218, sum219, sum220, sum221, sum222, sum223, sum224,
-             sum225, sum226, sum227, sum228, sum229, sum230, sum231, sum232;
+             sum225, sum226, sum227, sum228, sum229, sum230, sum231, sum232,
+             sum233, sum234, sum235, sum236, sum237, sum238, sum239, sum240,
+             sum241, sum242, sum243, sum244, sum245, sum246, sum247, sum248,
+             sum249, sum250, sum251, sum252, sum253, sum254, sum255, sum256,
+             sum257, sum258, sum259, sum260, sum261, sum262, sum263, sum264;
   assign sum21 = sum11 + sum12;
   assign sum22 = sum13 + sum14;
   assign sum23 = sum15 + sum16;
@@ -279,9 +499,43 @@ module tt_um_shinnosuke_fft (
   assign sum230 = sum159 + sum160;
   assign sum231 = sum161 + sum162;
   assign sum232 = sum163 + sum164;
-  // 第3レベルの加算（32個 → 16個）
+  assign sum233 = sum165 + sum166;
+  assign sum234 = sum167 + sum168;
+  assign sum235 = sum169 + sum170;
+  assign sum236 = sum171 + sum172;
+  assign sum237 = sum173 + sum174;
+  assign sum238 = sum175 + sum176;
+  assign sum239 = sum177 + sum178;
+  assign sum240 = sum179 + sum180;
+  assign sum241 = sum181 + sum182;
+  assign sum242 = sum183 + sum184;
+  assign sum243 = sum185 + sum186;
+  assign sum244 = sum187 + sum188;
+  assign sum245 = sum189 + sum190;
+  assign sum246 = sum191 + sum192;
+  assign sum247 = sum193 + sum194;
+  assign sum248 = sum195 + sum196;
+  assign sum249 = sum197 + sum198;
+  assign sum250 = sum199 + sum1100;
+  assign sum251 = sum1101 + sum1102;
+  assign sum252 = sum1103 + sum1104;
+  assign sum253 = sum1105 + sum1106;
+  assign sum254 = sum1107 + sum1108;
+  assign sum255 = sum1109 + sum1110;
+  assign sum256 = sum1111 + sum1112;
+  assign sum257 = sum1113 + sum1114;
+  assign sum258 = sum1115 + sum1116;
+  assign sum259 = sum1117 + sum1118;
+  assign sum260 = sum1119 + sum1120;
+  assign sum261 = sum1121 + sum1122;
+  assign sum262 = sum1123 + sum1124;
+  assign sum263 = sum1125 + sum1126;
+  assign sum264 = sum1127 + sum1128;
+  // 第3レベルの加算（64個 → 32個）
   wire [7:0] sum31, sum32, sum33, sum34, sum35, sum36, sum37, sum38,
-             sum39, sum310, sum311, sum312, sum313, sum314, sum315, sum316;
+             sum39, sum310, sum311, sum312, sum313, sum314, sum315, sum316,
+             sum317, sum318, sum319, sum320, sum321, sum322, sum323, sum324,
+             sum325, sum326, sum327, sum328, sum329, sum330, sum331, sum332;
   assign sum31 = sum21 + sum22;
   assign sum32 = sum23 + sum24;
   assign sum33 = sum25 + sum26;
@@ -298,8 +552,25 @@ module tt_um_shinnosuke_fft (
   assign sum314 = sum227 + sum228;
   assign sum315 = sum229 + sum230;
   assign sum316 = sum231 + sum232;
-  // 第4レベルの加算（16個 → 8個）
-  wire [7:0] sum41, sum42, sum43, sum44, sum45, sum46, sum47, sum48;
+  assign sum317 = sum233 + sum234;
+  assign sum318 = sum235 + sum236;
+  assign sum319 = sum237 + sum238;
+  assign sum320 = sum239 + sum240;
+  assign sum321 = sum241 + sum242;
+  assign sum322 = sum243 + sum244;
+  assign sum323 = sum245 + sum246;
+  assign sum324 = sum247 + sum248;
+  assign sum325 = sum249 + sum250;
+  assign sum326 = sum251 + sum252;
+  assign sum327 = sum253 + sum254;
+  assign sum328 = sum255 + sum256;
+  assign sum329 = sum257 + sum258;
+  assign sum330 = sum259 + sum260;
+  assign sum331 = sum261 + sum262;
+  assign sum332 = sum263 + sum264;
+  // 第4レベルの加算（32個 → 16個）
+  wire [7:0] sum41, sum42, sum43, sum44, sum45, sum46, sum47, sum48,
+             sum49, sum410, sum411, sum412, sum413, sum414, sum415, sum416;
   assign sum41 = sum31 + sum32;
   assign sum42 = sum33 + sum34;
   assign sum43 = sum35 + sum36;
@@ -308,22 +579,41 @@ module tt_um_shinnosuke_fft (
   assign sum46 = sum311 + sum312;
   assign sum47 = sum313 + sum314;
   assign sum48 = sum315 + sum316;
+  assign sum49 = sum317 + sum318;
+  assign sum410 = sum319 + sum320;
+  assign sum411 = sum321 + sum322;
+  assign sum412 = sum323 + sum324;
+  assign sum413 = sum325 + sum326;
+  assign sum414 = sum327 + sum328;
+  assign sum415 = sum329 + sum330;
+  assign sum416 = sum331 + sum332;
 
-  // 第5レベルの加算（8個 → 4個）
-  wire [7:0] sum51, sum52, sum53, sum54;
+  // 第5レベルの加算（16個 → 8個）
+  wire [7:0] sum51, sum52, sum53, sum54, sum55, sum56, sum57, sum58;
   assign sum51 = sum41 + sum42;
   assign sum52 = sum43 + sum44;
   assign sum53 = sum45 + sum46;
   assign sum54 = sum47 + sum48;
+  assign sum55 = sum49 + sum410;
+  assign sum56 = sum411 + sum412;
+  assign sum57 = sum413 + sum414;
+  assign sum58 = sum415 + sum416;
 
-  // 第6レベルの加算（4個 → 2個）
-  wire [7:0] sum61, sum62;
+  // 第6レベルの加算（8個 → 4個）
+  wire [7:0] sum61, sum62, sum63, sum64;
   assign sum61 = sum51 + sum52;
   assign sum62 = sum53 + sum54;
+  assign sum63 = sum55 + sum56;
+  assign sum64 = sum57 + sum58;
+
+  // 第7レベルの加算（4個 → 2個）
+  wire [7:0] sum71, sum72;
+  assign sum71 = sum61 + sum62;
+  assign sum72 = sum63 + sum64;
 
   // 最終レベルの加算（2個 → 1個）
   wire [7:0] sum_final;
-  assign sum_final = sum61 + sum62;
+  assign sum_final = sum71 + sum72;
   assign uo_out = sum_final;
 
 
